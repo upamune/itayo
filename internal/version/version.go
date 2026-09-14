@@ -5,4 +5,4 @@ package version
 const DawarichCompat = "1.14.1"
 
 // Version is itayo's own release identifier.
-const Version = "0.1.0"
+const Version = "0.2.0"

@@ -1,0 +1,28 @@
+[Unit]
+Description=itayo Dawarich-compatible location ingest
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=itayo
+Group=itayo
+WorkingDirectory=/var/lib/itayo
+EnvironmentFile=-/etc/itayo/itayo.env
+ExecStart=/usr/local/bin/itayo
+Restart=on-failure
+RestartSec=2
+TimeoutStopSec=15
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ReadWritePaths=/var/lib/itayo
+
+# Bind to a high port. Do not use 80, 443, 8788, or 8789.
+# Example LISTEN_ADDR values (placeholders only):
+#   127.0.0.1:8790   loopback only
+#   :8790            all interfaces on this host
+
+[Install]
+WantedBy=multi-user.target
