@@ -203,6 +203,11 @@ func TestBearerAuthAndListFilters(t *testing.T) {
 		t.Fatalf("invalid bbox status %d", rec.Code)
 	}
 
+	rec = doJSON(t, h, http.MethodGet, "/api/v1/points?api_key="+testKey+"&min_latitude=35", nil)
+	if rec.Code != http.StatusBadRequest {
+		t.Fatalf("partial bbox status %d", rec.Code)
+	}
+
 	rec = doJSON(t, h, http.MethodGet, "/api/v1/points?api_key="+testKey, nil)
 	etag := rec.Header().Get("ETag")
 	if etag == "" {
@@ -383,6 +388,9 @@ func TestPlanAndTrackedMonthsAndInsights(t *testing.T) {
 	if features["write_api"] != true || features["data_window"] != nil {
 		t.Fatalf("features %+v", features)
 	}
+	if features["full_digest"] != false {
+		t.Fatalf("full_digest must be false (digests are out of scope): %+v", features)
+	}
 
 	_ = doJSON(t, h, http.MethodPost, "/api/v1/points?api_key="+testKey, map[string]any{
 		"locations": []any{
@@ -498,7 +506,7 @@ func newTestHandler(t *testing.T) http.Handler {
 	if err != nil {
 		t.Fatal(err)
 	}
-	return New(config.Config{
+	h, err := New(config.Config{
 		APIKey:       testKey,
 		ListenAddr:   ":8790",
 		TimeZone:     "Asia/Tokyo",
@@ -508,4 +516,25 @@ func newTestHandler(t *testing.T) http.Handler {
 		UserTheme:    "light",
 		LogFormat:    "text",
 	}, st)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return h
+}
+
+func TestNewFailsWhenIdentityCannotBeSeeded(t *testing.T) {
+	st, err := store.Open(filepath.Join(t.TempDir(), "itayo.sqlite"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	_ = st.Close()
+	_, err = New(config.Config{
+		APIKey:    testKey,
+		TimeZone:  "Asia/Tokyo",
+		UserEmail: "itayo@example.com",
+		UserTheme: "light",
+	}, st)
+	if err == nil {
+		t.Fatal("expected identity seed failure")
+	}
 }

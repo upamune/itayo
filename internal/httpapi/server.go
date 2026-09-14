@@ -20,15 +20,15 @@ type Server struct {
 	now   func() time.Time
 }
 
-// New returns an http.Handler for itayo.
-func New(cfg config.Config, st *store.Store) http.Handler {
+// New returns an http.Handler for itayo. Identity seed failure is fatal.
+func New(cfg config.Config, st *store.Store) (http.Handler, error) {
 	s := &Server{
 		cfg:   cfg,
 		store: st,
 		now:   time.Now,
 	}
 	if _, err := st.EnsureIdentity(context.Background(), cfg.UserEmail, cfg.UserTheme, s.now()); err != nil {
-		slog.Error("seed identity", "err", err)
+		return nil, err
 	}
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /api/v1/health", s.health)
@@ -44,7 +44,7 @@ func New(cfg config.Config, st *store.Store) http.Handler {
 	mux.HandleFunc("GET /api/v1/insights", s.authed(s.insightsOverview))
 	mux.HandleFunc("GET /api/v1/insights/details", s.authed(s.insightsDetails))
 	mux.HandleFunc("GET /api/v1/stats", s.authed(s.stats))
-	return s.withRequestLog(s.withCompatHeaders(s.withRecover(mux)))
+	return s.withRequestLog(s.withCompatHeaders(s.withRecover(mux))), nil
 }
 
 func (s *Server) withCompatHeaders(next http.Handler) http.Handler {

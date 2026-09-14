@@ -236,6 +236,33 @@ func TestTrackedMonths(t *testing.T) {
 	}
 }
 
+func TestTrackedMonthsUsesLocalTimezone(t *testing.T) {
+	s := openTest(t)
+	ctx := context.Background()
+	tokyo, err := time.LoadLocation("Asia/Tokyo")
+	if err != nil {
+		t.Fatal(err)
+	}
+	// Same UTC calendar day; 10:00 UTC is still 31 Jan in Tokyo, 20:00 UTC is 1 Feb.
+	_, err = s.Upsert(ctx, []Point{
+		{Timestamp: time.Date(2025, 1, 31, 10, 0, 0, 0, time.UTC).Unix(), Latitude: 35, Longitude: 139},
+		{Timestamp: time.Date(2025, 1, 31, 20, 0, 0, 0, time.UTC).Unix(), Latitude: 35.1, Longitude: 139.1},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	got, err := s.TrackedMonths(ctx, tokyo)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(got) != 1 || got[0].Year != 2025 {
+		t.Fatalf("years = %+v", got)
+	}
+	if strings.Join(got[0].Months, ",") != "Jan,Feb" {
+		t.Fatalf("local months = %v, want Jan,Feb", got[0].Months)
+	}
+}
+
 func openTest(t *testing.T) *Store {
 	t.Helper()
 	s, err := Open(filepath.Join(t.TempDir(), "itayo.sqlite"))

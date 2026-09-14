@@ -49,7 +49,7 @@ func (s *Server) plan(w http.ResponseWriter, _ *http.Request) {
 			"integrations": true,
 			"write_api":    true,
 			"sharing":      true,
-			"full_digest":  true,
+			"full_digest":  false,
 			"data_window":  nil,
 		},
 	})

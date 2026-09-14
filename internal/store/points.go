@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"sort"
 	"strings"
 	"time"
 )
@@ -300,11 +301,13 @@ func (s *Store) PointCount(ctx context.Context) (int, error) {
 }
 
 // TrackedMonths groups points into year → English month abbreviations in loc.
+// Each point is converted to loc before year/month are taken; UTC-day grouping
+// would drop local months that start mid-UTC-day (e.g. 20:00 UTC in Asia/Tokyo).
 func (s *Store) TrackedMonths(ctx context.Context, loc *time.Location) ([]YearMonths, error) {
 	if loc == nil {
 		loc = time.UTC
 	}
-	rows, err := s.db.QueryContext(ctx, `SELECT MIN(timestamp) FROM points GROUP BY timestamp / 86400`)
+	rows, err := s.db.QueryContext(ctx, `SELECT timestamp FROM points`)
 	if err != nil {
 		return nil, err
 	}
@@ -315,7 +318,6 @@ func (s *Store) TrackedMonths(ctx context.Context, loc *time.Location) ([]YearMo
 		month time.Month
 	}
 	seen := map[key]struct{}{}
-	order := []int{}
 	monthsByYear := map[int]map[time.Month]struct{}{}
 	for rows.Next() {
 		var ts int64
@@ -330,7 +332,6 @@ func (s *Store) TrackedMonths(ctx context.Context, loc *time.Location) ([]YearMo
 		seen[k] = struct{}{}
 		if _, ok := monthsByYear[k.year]; !ok {
 			monthsByYear[k.year] = map[time.Month]struct{}{}
-			order = append(order, k.year)
 		}
 		monthsByYear[k.year][k.month] = struct{}{}
 	}
@@ -338,16 +339,14 @@ func (s *Store) TrackedMonths(ctx context.Context, loc *time.Location) ([]YearMo
 		return nil, err
 	}
 
-	// Years descending, months calendar-ascending.
-	for i := 0; i < len(order); i++ {
-		for j := i + 1; j < len(order); j++ {
-			if order[j] > order[i] {
-				order[i], order[j] = order[j], order[i]
-			}
-		}
+	years := make([]int, 0, len(monthsByYear))
+	for year := range monthsByYear {
+		years = append(years, year)
 	}
-	out := make([]YearMonths, 0, len(order))
-	for _, year := range order {
+	sort.Slice(years, func(i, j int) bool { return years[i] > years[j] })
+
+	out := make([]YearMonths, 0, len(years))
+	for _, year := range years {
 		ym := YearMonths{Year: year, Months: make([]string, 0, 12)}
 		for m := time.January; m <= time.December; m++ {
 			if _, ok := monthsByYear[year][m]; ok {

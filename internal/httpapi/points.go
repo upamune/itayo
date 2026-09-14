@@ -106,7 +106,7 @@ func parseBBox(minLat, maxLat, minLon, maxLon string) (*store.BBox, error) {
 		return nil, nil
 	}
 	if minLat == "" || maxLat == "" || minLon == "" || maxLon == "" {
-		return nil, nil
+		return nil, errInvalidBBox
 	}
 	a, err1 := strconv.ParseFloat(minLat, 64)
 	b, err2 := strconv.ParseFloat(maxLat, 64)
