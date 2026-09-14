@@ -1,6 +1,6 @@
 # itayo
 
-Dawarich 公式 iOS アプリ向けの、Go + SQLite 単一バイナリ ingest。Dawarich 1.14.1 互換のヘッダと ingest API を返す。
+Dawarich 公式 iOS アプリ専用の、Go + SQLite 単一バイナリ ingest。Dawarich 1.14.1 互換のヘッダと公式アプリ用 API を返す。OwnTracks / Overland / Traccar は扱わない。
 
 ## よく使うコマンド
 
@@ -29,7 +29,7 @@ mise run ci
 cmd/itayo/           # エントリポイント
 internal/config/     # 環境変数
 internal/store/      # SQLite
-internal/ingest/     # GeoJSON / OwnTracks / Traccar
+internal/ingest/     # 公式 iOS GeoJSON
 internal/httpapi/    # Dawarich 互換 HTTP
 internal/version/    # X-Dawarich-Version
 ```

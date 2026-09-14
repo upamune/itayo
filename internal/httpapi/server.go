@@ -35,9 +35,6 @@ func New(cfg config.Config, st *store.Store) http.Handler {
 	mux.HandleFunc("GET /api/v1/health", s.health)
 	mux.HandleFunc("POST /api/v1/points", s.authed(s.createPoints))
 	mux.HandleFunc("GET /api/v1/points", s.authed(s.listPoints))
-	mux.HandleFunc("POST /api/v1/overland/batches", s.authed(s.overlandBatches))
-	mux.HandleFunc("POST /api/v1/owntracks/points", s.authed(s.owntracksPoints))
-	mux.HandleFunc("POST /api/v1/traccar/points", s.authed(s.traccarPoints))
 	mux.HandleFunc("GET /api/v1/users/me", s.authed(s.usersMe))
 	mux.HandleFunc("GET /api/v1/settings", s.authed(s.getSettings))
 	mux.HandleFunc("PATCH /api/v1/settings", s.authed(s.patchSettings))
@@ -169,57 +166,6 @@ func (s *Server) listPoints(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, http.StatusOK, fullPayload(points))
-}
-
-func (s *Server) overlandBatches(w http.ResponseWriter, r *http.Request) {
-	body, err := decodeObject(r)
-	if err != nil {
-		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "invalid json"})
-		return
-	}
-	locations, _ := body["locations"].([]any)
-	points := ingest.FromGeoJSONLocations(locations, s.cfg.Location)
-	if _, err := s.store.Upsert(r.Context(), points); err != nil {
-		slog.Error("overland upsert", "err", err)
-		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "batch creation failed"})
-		return
-	}
-	writeJSON(w, http.StatusCreated, map[string]string{"result": "ok"})
-}
-
-func (s *Server) owntracksPoints(w http.ResponseWriter, r *http.Request) {
-	body, err := decodeObject(r)
-	if err != nil {
-		writeJSON(w, http.StatusOK, []any{})
-		return
-	}
-	if p, ok := ingest.FromOwnTracks(body, s.cfg.Location); ok {
-		if _, err := s.store.Upsert(r.Context(), []store.Point{p}); err != nil {
-			slog.Error("owntracks upsert", "err", err)
-			writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "point creation failed"})
-			return
-		}
-	}
-	writeJSON(w, http.StatusOK, []any{})
-}
-
-func (s *Server) traccarPoints(w http.ResponseWriter, r *http.Request) {
-	body, err := decodeObject(r)
-	if err != nil {
-		writeJSON(w, http.StatusUnprocessableEntity, map[string]string{"error": "point creation failed"})
-		return
-	}
-	p, ok := ingest.FromTraccar(body, s.cfg.Location)
-	if !ok {
-		writeJSON(w, http.StatusUnprocessableEntity, map[string]string{"error": "point creation failed"})
-		return
-	}
-	if _, err := s.store.Upsert(r.Context(), []store.Point{p}); err != nil {
-		slog.Error("traccar upsert", "err", err)
-		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "point creation failed"})
-		return
-	}
-	writeJSON(w, http.StatusOK, []any{})
 }
 
 func (s *Server) usersMe(w http.ResponseWriter, r *http.Request) {

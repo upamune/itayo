@@ -12,7 +12,7 @@ import (
 
 const courseColumnLimit = 1000
 
-// FromGeoJSONLocations parses Dawarich iOS / Overland GeoJSON location features.
+// FromGeoJSONLocations parses official Dawarich iOS GeoJSON location features.
 // Invalid and Null Island points are dropped.
 func FromGeoJSONLocations(locations []any, loc *time.Location) []store.Point {
 	out := make([]store.Point, 0, len(locations))
@@ -64,155 +64,6 @@ func geoJSONPoint(m map[string]any, loc *time.Location) (store.Point, bool) {
 		RawData:          raw,
 	}
 	return p, true
-}
-
-// FromOwnTracks parses an OwnTracks HTTP location payload.
-func FromOwnTracks(body map[string]any, loc *time.Location) (store.Point, bool) {
-	if strings.EqualFold(asString(body["_type"]), "waypoint") {
-		return store.Point{}, false
-	}
-	lat, okLat := asFloat(body["lat"])
-	lon, okLon := asFloat(body["lon"])
-	if !okLat || !okLon || !validCoord(lat, lon) || NullIsland(lat, lon) {
-		return store.Point{}, false
-	}
-	ts, ok := ParseTimestamp(body["tst"], loc)
-	if !ok {
-		return store.Point{}, false
-	}
-	vel := optFloat(body["vel"])
-	if vel != nil {
-		// OwnTracks vel is km/h; store m/s like Dawarich.
-		ms := *vel * 1000 / 3600
-		vel = &ms
-	}
-	raw, _ := json.Marshal(body)
-	p := store.Point{
-		Timestamp:        ts,
-		Latitude:         lat,
-		Longitude:        lon,
-		Altitude:         optFloat(body["alt"]),
-		Accuracy:         optFloat(body["acc"]),
-		VerticalAccuracy: optFloat(body["vac"]),
-		Velocity:         vel,
-		Course:           columnSafeDecimal(body["cog"]),
-		Battery:          intPtr(asInt(body["batt"])),
-		BatteryStatus:    ownTracksBatteryStatus(body["bs"]),
-		TrackerID:        optString(body["tid"]),
-		SSID:             optString(body["SSID"]),
-		RawData:          raw,
-	}
-	if p.Battery != nil && *p.Battery <= 0 {
-		p.Battery = nil
-	}
-	return p, true
-}
-
-func ownTracksBatteryStatus(v any) *string {
-	n, ok := asFloat(v)
-	if !ok {
-		return new("unknown")
-	}
-	s := "unknown"
-	switch int(n) {
-	case 1:
-		s = "unplugged"
-	case 2:
-		s = "charging"
-	case 3:
-		s = "full"
-	}
-	return &s
-}
-
-// FromTraccar parses nested (official client) or flat OsmAnd-style payloads.
-func FromTraccar(body map[string]any, loc *time.Location) (store.Point, bool) {
-	if isFlatTraccar(body) {
-		body = flattenTraccar(body)
-	}
-	location, _ := asMap(body["location"])
-	coords, _ := asMap(location["coords"])
-	if len(coords) == 0 {
-		coords = location
-	}
-	lat, okLat := asFloat(coords["latitude"])
-	lon, okLon := asFloat(coords["longitude"])
-	if !okLat || !okLon || !validCoord(lat, lon) || NullIsland(lat, lon) {
-		return store.Point{}, false
-	}
-	ts, ok := ParseTimestamp(location["timestamp"], loc)
-	if !ok {
-		return store.Point{}, false
-	}
-	battery, _ := asMap(location["battery"])
-	if len(battery) == 0 {
-		battery, _ = asMap(body["battery"])
-	}
-	raw, _ := json.Marshal(body)
-	p := store.Point{
-		Timestamp: ts,
-		Latitude:  lat,
-		Longitude: lon,
-		Altitude:  optFloat(coords["altitude"]),
-		Accuracy:  optFloat(coords["accuracy"]),
-		Velocity:  optFloat(coords["speed"]),
-		Course:    columnSafeDecimal(first(coords["heading"], location["heading"])),
-		Battery:   batteryPercent(battery["level"]),
-		TrackerID: firstString(body["device_id"], body["id"]),
-		RawData:   raw,
-	}
-	if charging, ok := battery["is_charging"].(bool); ok {
-		st := "unplugged"
-		if charging {
-			st = "charging"
-		}
-		p.BatteryStatus = &st
-	}
-	return p, true
-}
-
-func isFlatTraccar(body map[string]any) bool {
-	if _, ok := body["location"]; ok {
-		return false
-	}
-	_, hasLat := asFloat(body["lat"])
-	_, hasLon := asFloat(body["lon"])
-	return hasLat && hasLon
-}
-
-func flattenTraccar(in map[string]any) map[string]any {
-	speed := optFloat(in["speed"])
-	if speed != nil {
-		ms := *speed / 1.94384 // knots -> m/s, matching Dawarich
-		speed = &ms
-	}
-	loc := map[string]any{
-		"timestamp": in["timestamp"],
-		"latitude":  in["lat"],
-		"longitude": in["lon"],
-		"accuracy":  in["accuracy"],
-		"altitude":  in["altitude"],
-		"heading":   in["bearing"],
-	}
-	if speed != nil {
-		loc["speed"] = *speed
-	}
-	out := map[string]any{
-		"device_id": first(in["id"], in["device_id"]),
-		"location":  loc,
-	}
-	if _, ok := in["charge"]; ok {
-		out["battery"] = map[string]any{"is_charging": asBool(in["charge"])}
-	}
-	if batt, ok := asFloat(in["batt"]); ok {
-		b, _ := asMap(out["battery"])
-		if b == nil {
-			b = map[string]any{}
-		}
-		b["level"] = batt / 100
-		out["battery"] = b
-	}
-	return out
 }
 
 // NullIsland reports (0, 0) coordinates.
@@ -327,35 +178,6 @@ func asFloat(v any) (float64, bool) {
 	}
 }
 
-func asInt(v any) int {
-	f, ok := asFloat(v)
-	if !ok {
-		return 0
-	}
-	return int(f)
-}
-
-func asString(v any) string {
-	s, _ := v.(string)
-	return s
-}
-
-func asBool(v any) bool {
-	switch t := v.(type) {
-	case bool:
-		return t
-	case string:
-		return t == "1" || strings.EqualFold(t, "true") || strings.EqualFold(t, "yes")
-	case float64:
-		return t != 0
-	case json.Number:
-		f, err := t.Float64()
-		return err == nil && f != 0
-	default:
-		return false
-	}
-}
-
 func optFloat(v any) *float64 {
 	f, ok := asFloat(v)
 	if !ok {
@@ -379,23 +201,4 @@ func firstString(vals ...any) *string {
 		}
 	}
 	return nil
-}
-
-func first(vals ...any) any {
-	for _, v := range vals {
-		if v != nil {
-			return v
-		}
-	}
-	return nil
-}
-
-//go:fix inline
-func strPtr(s string) *string { return new(s) }
-
-func intPtr(n int) *int {
-	if n == 0 {
-		return nil
-	}
-	return &n
 }

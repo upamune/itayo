@@ -1,6 +1,6 @@
 # itayo
 
-Dawarich 公式 iOS アプリ向けの、Go + SQLite 単一バイナリ ingest。API は Dawarich 1.14.1 互換ヘッダと主要エンドポイントを返す。名前は「いたよ」（Da war ich の系譜）。
+Dawarich **公式 iOS アプリ専用**の、Go + SQLite 単一バイナリ ingest。API は Dawarich 1.14.1 互換ヘッダと公式アプリが使うエンドポイントだけを返す。名前は「いたよ」（Da war ich の系譜）。OwnTracks / Overland / Traccar は扱わない。
 
 ## インストール
 
@@ -52,11 +52,8 @@ curl -sS http://localhost:8790/api/v1/health
 | メソッド | パス | 備考 |
 | --- | --- | --- |
 | GET | `/api/v1/health` | 認証不要。`status=ok` と互換ヘッダ。`X-Dawarich-Response` はキーの有無で文言が変わる（公式 iOS 互換のため維持）。キー探索に使えるので、サービスはプライベートネットワーク / tailnet に置く |
-| POST | `/api/v1/points` | iOS GeoJSON `locations[]`。不正点は捨てて 200 |
+| POST | `/api/v1/points` | 公式 iOS の GeoJSON `locations[]`。不正点は捨てて 200 |
 | GET | `/api/v1/points` | `start_at` / `end_at` / `order` / `page` / `per_page` / `slim` |
-| POST | `/api/v1/overland/batches` | 201 `{"result":"ok"}` |
-| POST | `/api/v1/owntracks/points` | 200 `[]` |
-| POST | `/api/v1/traccar/points` | nested / flat。成功 200 `[]`、不正 422 |
 | GET | `/api/v1/users/me` | stub |
 | GET/PATCH | `/api/v1/settings` | stub |
 

@@ -171,59 +171,17 @@ func TestBearerAuthAndListFilters(t *testing.T) {
 	}
 }
 
-func TestOverlandOwnTracksTraccar(t *testing.T) {
+func TestRemovedThirdPartyIngestPaths(t *testing.T) {
 	h := newTestHandler(t)
-
-	rec := doJSON(t, h, http.MethodPost, "/api/v1/overland/batches?api_key="+testKey, map[string]any{
-		"locations": []any{feature(139.7, 35.6, "2025-01-17T21:03:01Z")},
-	})
-	if rec.Code != http.StatusCreated {
-		t.Fatalf("overland %d %s", rec.Code, rec.Body.String())
-	}
-	var overland map[string]string
-	if err := json.Unmarshal(rec.Body.Bytes(), &overland); err != nil || overland["result"] != "ok" {
-		t.Fatalf("overland body %s", rec.Body.String())
-	}
-
-	rec = doJSON(t, h, http.MethodPost, "/api/v1/owntracks/points?api_key="+testKey, map[string]any{
-		"_type": "location",
-		"lat":   35.0,
-		"lon":   139.0,
-		"tst":   1_710_000_000,
-		"tid":   "ab",
-	})
-	if rec.Code != http.StatusOK || rec.Body.String() != "[]\n" {
-		t.Fatalf("owntracks %d %q", rec.Code, rec.Body.String())
-	}
-
-	rec = doJSON(t, h, http.MethodPost, "/api/v1/traccar/points?api_key="+testKey, map[string]any{
-		"device_id": "iphone-jane",
-		"location": map[string]any{
-			"timestamp": "2026-04-23T12:34:56Z",
-			"latitude":  52.52,
-			"longitude": 13.405,
-		},
-		"battery": map[string]any{"level": 0.85, "is_charging": true},
-	})
-	if rec.Code != http.StatusOK || rec.Body.String() != "[]\n" {
-		t.Fatalf("traccar nested %d %q", rec.Code, rec.Body.String())
-	}
-
-	rec = doJSON(t, h, http.MethodPost, "/api/v1/traccar/points?api_key="+testKey, map[string]any{
-		"id":        "osmand",
-		"lat":       35.0,
-		"lon":       139.1,
-		"timestamp": 1_710_000_100,
-	})
-	if rec.Code != http.StatusOK {
-		t.Fatalf("traccar flat %d %s", rec.Code, rec.Body.String())
-	}
-
-	rec = doJSON(t, h, http.MethodPost, "/api/v1/traccar/points?api_key="+testKey, map[string]any{
-		"device_id": "bad",
-	})
-	if rec.Code != http.StatusUnprocessableEntity {
-		t.Fatalf("traccar invalid %d", rec.Code)
+	for _, path := range []string{
+		"/api/v1/overland/batches",
+		"/api/v1/owntracks/points",
+		"/api/v1/traccar/points",
+	} {
+		rec := doJSON(t, h, http.MethodPost, path+"?api_key="+testKey, map[string]any{})
+		if rec.Code != http.StatusNotFound {
+			t.Fatalf("%s status %d, want 404", path, rec.Code)
+		}
 	}
 }
 
