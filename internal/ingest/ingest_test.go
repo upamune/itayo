@@ -107,6 +107,7 @@ func TestFromOwnTracks(t *testing.T) {
 		"tst":   int64(1_710_000_000),
 		"tid":   "ab",
 		"batt":  80.0,
+		"vel":   36.0,
 	}, time.UTC)
 	if !ok {
 		t.Fatal("rejected")
@@ -114,6 +115,25 @@ func TestFromOwnTracks(t *testing.T) {
 	if p.TrackerID == nil || *p.TrackerID != "ab" {
 		t.Fatalf("tid = %v", p.TrackerID)
 	}
+	if p.Velocity == nil || *p.Velocity != 10 {
+		t.Fatalf("vel without topic: got %v want 10 m/s (36 km/h)", p.Velocity)
+	}
+
+	withTopic, ok := FromOwnTracks(map[string]any{
+		"_type": "location",
+		"lat":   35.0,
+		"lon":   139.0,
+		"tst":   int64(1_710_000_000),
+		"vel":   3.6,
+		"topic": "owntracks/user/phone",
+	}, time.UTC)
+	if !ok {
+		t.Fatal("rejected with topic")
+	}
+	if withTopic.Velocity == nil || *withTopic.Velocity != 1 {
+		t.Fatalf("vel with topic: got %v want 1 m/s (3.6 km/h)", withTopic.Velocity)
+	}
+
 	if _, ok := FromOwnTracks(map[string]any{"_type": "waypoint", "lat": 1.0, "lon": 2.0, "tst": 1.0}, time.UTC); ok {
 		t.Fatal("waypoint should drop")
 	}

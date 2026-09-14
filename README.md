@@ -17,7 +17,7 @@ mise install
 
 ```bash
 cp .env.example .env
-# API_KEY=your-secret を自分の秘密に変える
+# API_KEY=your-secret を自分の秘密に変える（空だと起動しない）
 ```
 
 バイナリ:
@@ -45,13 +45,13 @@ curl -sS http://localhost:8790/api/v1/health
 # {"status":"ok"} と X-Dawarich-Version: 1.14.1
 ```
 
-公式 iOS アプリのサーバ URL には `http://localhost:8790` か、tailnet 上の `http://YOUR_TAILNET_HOST:8790`（例: `http://itayo.example.ts.net:8790`）を指定する。API キーは `API_KEY` と同じ値。ポートは 80 / 443 / 8788 / 8789 を避け、既定の 8790 を使う。
+公式 iOS アプリのサーバ URL には `http://localhost:8790` か、tailnet 上の `http://YOUR_TAILNET_HOST:8790`（例: `http://itayo.example.ts.net:8790`）を指定する。API キーは `API_KEY` と同じ値。ポートは 80 / 443 / 8788 / 8789 を避け、既定の 8790 を使う。`API_KEY` が空だと起動しない。インターネットへ直接晒さず、プライベートネットワークまたは tailnet 上に置く。
 
-認証はクエリ `?api_key=your-secret` または `Authorization: Bearer your-secret`。
+認証は `Authorization: Bearer your-secret` を優先する。`?api_key=` も公式クライアント互換のため受け付けるが、アクセスログやリファラにキーが残るので避ける。
 
 | メソッド | パス | 備考 |
 | --- | --- | --- |
-| GET | `/api/v1/health` | 認証不要。`status=ok` と互換ヘッダ |
+| GET | `/api/v1/health` | 認証不要。`status=ok` と互換ヘッダ。`X-Dawarich-Response` はキーの有無で文言が変わる（公式 iOS 互換のため維持）。キー探索に使えるので、サービスはプライベートネットワーク / tailnet に置く |
 | POST | `/api/v1/points` | iOS GeoJSON `locations[]`。不正点は捨てて 200 |
 | GET | `/api/v1/points` | `start_at` / `end_at` / `order` / `page` / `per_page` / `slim` |
 | POST | `/api/v1/overland/batches` | 201 `{"result":"ok"}` |

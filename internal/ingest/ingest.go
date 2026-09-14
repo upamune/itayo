@@ -81,7 +81,8 @@ func FromOwnTracks(body map[string]any, loc *time.Location) (store.Point, bool) 
 		return store.Point{}, false
 	}
 	vel := optFloat(body["vel"])
-	if vel != nil && asString(body["topic"]) != "" {
+	if vel != nil {
+		// OwnTracks vel is km/h; store m/s like Dawarich.
 		ms := *vel * 1000 / 3600
 		vel = &ms
 	}

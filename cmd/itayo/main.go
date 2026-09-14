@@ -28,9 +28,6 @@ func run() error {
 	if err != nil {
 		return err
 	}
-	if cfg.APIKey == "" {
-		slog.Warn("API_KEY is empty; authenticated endpoints will return 401")
-	}
 	st, err := store.Open(cfg.DatabasePath)
 	if err != nil {
 		return err

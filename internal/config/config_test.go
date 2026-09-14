@@ -32,8 +32,20 @@ func TestLoadDefaults(t *testing.T) {
 }
 
 func TestLoadInvalidTimeZone(t *testing.T) {
+	t.Setenv("API_KEY", "your-secret")
 	t.Setenv("TIME_ZONE", "Not/AZone")
 	if _, err := Load(); err == nil {
 		t.Fatal("expected error")
+	}
+}
+
+func TestLoadEmptyAPIKey(t *testing.T) {
+	t.Setenv("API_KEY", "")
+	if _, err := Load(); err == nil {
+		t.Fatal("expected error")
+	}
+	t.Setenv("API_KEY", "   ")
+	if _, err := Load(); err == nil {
+		t.Fatal("expected error for whitespace API_KEY")
 	}
 }

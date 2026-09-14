@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -32,6 +33,9 @@ func Load() (Config, error) {
 	loc, err := time.LoadLocation(cfg.TimeZone)
 	if err != nil {
 		return Config{}, fmt.Errorf("TIME_ZONE %q: %w", cfg.TimeZone, err)
+	}
+	if strings.TrimSpace(cfg.APIKey) == "" {
+		return Config{}, fmt.Errorf("API_KEY is required")
 	}
 	cfg.Location = loc
 	return cfg, nil

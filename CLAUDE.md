@@ -13,7 +13,7 @@ mise run build
 mise run ci
 ```
 
-起動は `mise run build` のあと `API_KEY=your-secret ./dist/itayo`。既定は `LISTEN_ADDR=:8790`、`TIME_ZONE=Asia/Tokyo`。
+起動は `mise run build` のあと `API_KEY=your-secret ./dist/itayo`。`API_KEY` が空だと起動しない。既定は `LISTEN_ADDR=:8790`、`TIME_ZONE=Asia/Tokyo`。認証は Bearer を優先する。
 
 ## 規約
 
