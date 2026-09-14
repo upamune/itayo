@@ -3,9 +3,11 @@ package httpapi
 import (
 	"bytes"
 	"encoding/json"
+	"log/slog"
 	"net/http"
 	"net/http/httptest"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
@@ -53,6 +55,10 @@ func TestUnauthorized(t *testing.T) {
 	h.ServeHTTP(rec, req)
 	if rec.Code != http.StatusUnauthorized {
 		t.Fatalf("status %d", rec.Code)
+	}
+	rec = doJSON(t, h, http.MethodPost, "/api/v1/points?api_key=wrong-key", map[string]any{"locations": []any{}})
+	if rec.Code != http.StatusUnauthorized {
+		t.Fatalf("wrong key status %d", rec.Code)
 	}
 }
 
@@ -118,6 +124,17 @@ func TestCreatePointsIOSGeoJSON(t *testing.T) {
 	}
 }
 
+func TestInvalidJSONDoesNotPanic(t *testing.T) {
+	h := newTestHandler(t)
+	rec := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodPost, "/api/v1/points?api_key="+testKey, bytes.NewReader([]byte(`[`)))
+	req.Header.Set("Content-Type", "application/json")
+	h.ServeHTTP(rec, req)
+	if rec.Code != http.StatusBadRequest {
+		t.Fatalf("status %d body %s", rec.Code, rec.Body.String())
+	}
+}
+
 func TestBearerAuthAndListFilters(t *testing.T) {
 	h := newTestHandler(t)
 	payload := map[string]any{
@@ -169,6 +186,35 @@ func TestBearerAuthAndListFilters(t *testing.T) {
 			}
 		}
 	}
+
+	rec = doJSON(t, h, http.MethodGet, "/api/v1/points?api_key="+testKey+"&min_latitude=35.05&max_latitude=35.15&min_longitude=139.05&max_longitude=139.15", nil)
+	if rec.Code != http.StatusOK {
+		t.Fatalf("bbox %d %s", rec.Code, rec.Body.String())
+	}
+	if err := json.Unmarshal(rec.Body.Bytes(), &points); err != nil {
+		t.Fatal(err)
+	}
+	if len(points) != 1 || points[0]["latitude"] != "35.1" {
+		t.Fatalf("bbox points %+v", points)
+	}
+
+	rec = doJSON(t, h, http.MethodGet, "/api/v1/points?api_key="+testKey+"&min_latitude=1&max_latitude=0&min_longitude=0&max_longitude=1", nil)
+	if rec.Code != http.StatusBadRequest {
+		t.Fatalf("invalid bbox status %d", rec.Code)
+	}
+
+	rec = doJSON(t, h, http.MethodGet, "/api/v1/points?api_key="+testKey, nil)
+	etag := rec.Header().Get("ETag")
+	if etag == "" {
+		t.Fatal("missing etag")
+	}
+	req = httptest.NewRequest(http.MethodGet, "/api/v1/points?api_key="+testKey, nil)
+	req.Header.Set("If-None-Match", etag)
+	rec = httptest.NewRecorder()
+	h.ServeHTTP(rec, req)
+	if rec.Code != http.StatusNotModified {
+		t.Fatalf("etag 304 got %d", rec.Code)
+	}
 }
 
 func TestRemovedThirdPartyIngestPaths(t *testing.T) {
@@ -185,7 +231,7 @@ func TestRemovedThirdPartyIngestPaths(t *testing.T) {
 	}
 }
 
-func TestUsersAndSettingsStubs(t *testing.T) {
+func TestUsersMeIsHonestAndStable(t *testing.T) {
 	h := newTestHandler(t)
 	rec := doJSON(t, h, http.MethodGet, "/api/v1/users/me?api_key="+testKey, nil)
 	if rec.Code != http.StatusOK {
@@ -199,8 +245,28 @@ func TestUsersAndSettingsStubs(t *testing.T) {
 	if user["email"] != "itayo@example.com" {
 		t.Fatalf("user %+v", user)
 	}
+	created := user["created_at"]
+	features, _ := me["features"].(map[string]any)
+	if _, ok := features["self_hosted"]; ok {
+		t.Fatal("self_hosted must not appear in features")
+	}
+	if features["reverse_geocoding"] != false || features["family"] != false {
+		t.Fatalf("features %+v", features)
+	}
 
-	rec = doJSON(t, h, http.MethodGet, "/api/v1/settings?api_key="+testKey, nil)
+	rec = doJSON(t, h, http.MethodGet, "/api/v1/users/me?api_key="+testKey, nil)
+	if err := json.Unmarshal(rec.Body.Bytes(), &me); err != nil {
+		t.Fatal(err)
+	}
+	user, _ = me["user"].(map[string]any)
+	if user["created_at"] != created {
+		t.Fatalf("created_at changed %v -> %v", created, user["created_at"])
+	}
+}
+
+func TestSettingsPersistPermitAndMapsMerge(t *testing.T) {
+	h := newTestHandler(t)
+	rec := doJSON(t, h, http.MethodGet, "/api/v1/settings?api_key="+testKey, nil)
 	if rec.Code != http.StatusOK {
 		t.Fatalf("settings %d", rec.Code)
 	}
@@ -214,7 +280,11 @@ func TestUsersAndSettingsStubs(t *testing.T) {
 	}
 
 	rec = doJSON(t, h, http.MethodPatch, "/api/v1/settings?api_key="+testKey, map[string]any{
-		"settings": map[string]any{"live_map_enabled": false},
+		"settings": map[string]any{
+			"live_map_enabled": false,
+			"unknown_key":      "nope",
+			"maps":             map[string]any{"distance_unit": "mi"},
+		},
 	})
 	if rec.Code != http.StatusOK {
 		t.Fatalf("patch %d %s", rec.Code, rec.Body.String())
@@ -225,6 +295,163 @@ func TestUsersAndSettingsStubs(t *testing.T) {
 	settings, _ = settingsBody["settings"].(map[string]any)
 	if settings["live_map_enabled"] != false {
 		t.Fatalf("patched %+v", settings["live_map_enabled"])
+	}
+	if _, ok := settings["unknown_key"]; ok {
+		t.Fatal("unknown settings key persisted")
+	}
+	maps, _ := settings["maps"].(map[string]any)
+	if maps["distance_unit"] != "mi" {
+		t.Fatalf("maps %+v", maps)
+	}
+
+	rec = doJSON(t, h, http.MethodPatch, "/api/v1/settings?api_key="+testKey, map[string]any{"live_map_enabled": true})
+	if rec.Code != http.StatusUnprocessableEntity {
+		t.Fatalf("missing settings wrapper status %d", rec.Code)
+	}
+}
+
+func TestMobileSettingsLastWriteWins(t *testing.T) {
+	h := newTestHandler(t)
+	rec := doJSON(t, h, http.MethodGet, "/api/v1/settings/mobile?api_key="+testKey, nil)
+	if rec.Code != http.StatusOK {
+		t.Fatalf("get mobile %d %s", rec.Code, rec.Body.String())
+	}
+	var body map[string]any
+	if err := json.Unmarshal(rec.Body.Bytes(), &body); err != nil {
+		t.Fatal(err)
+	}
+	if body["updated_at"] != nil {
+		t.Fatalf("empty updated_at = %v", body["updated_at"])
+	}
+	caps, _ := body["capabilities"].(map[string]any)
+	photo, _ := caps["photo_library_import"].(map[string]any)
+	if photo["version"] != float64(1) {
+		t.Fatalf("capabilities %+v", caps)
+	}
+
+	rec = doJSON(t, h, http.MethodPatch, "/api/v1/settings/mobile?api_key="+testKey, map[string]any{
+		"settings": map[string]any{
+			"tracking_mode":        "precise",
+			"batch_size":           250,
+			"upload_automatically": true,
+			"unknown":              1,
+		},
+	})
+	if rec.Code != http.StatusOK {
+		t.Fatalf("patch mobile %d %s", rec.Code, rec.Body.String())
+	}
+	if err := json.Unmarshal(rec.Body.Bytes(), &body); err != nil {
+		t.Fatal(err)
+	}
+	settings, _ := body["settings"].(map[string]any)
+	if settings["tracking_mode"] != "precise" || settings["batch_size"] != float64(250) {
+		t.Fatalf("mobile settings %+v", settings)
+	}
+	if _, ok := settings["unknown"]; ok {
+		t.Fatal("unknown mobile key")
+	}
+	if body["updated_at"] == nil || body["message"] != "Settings updated" {
+		t.Fatalf("stamp %+v", body)
+	}
+
+	rec = doJSON(t, h, http.MethodPatch, "/api/v1/settings/mobile?api_key="+testKey, map[string]any{
+		"settings": map[string]any{"batch_size": 10},
+	})
+	if err := json.Unmarshal(rec.Body.Bytes(), &body); err != nil {
+		t.Fatal(err)
+	}
+	settings, _ = body["settings"].(map[string]any)
+	if settings["tracking_mode"] != "precise" || settings["batch_size"] != float64(10) {
+		t.Fatalf("merge %+v", settings)
+	}
+}
+
+func TestPlanAndTrackedMonthsAndInsights(t *testing.T) {
+	h := newTestHandler(t)
+	rec := doJSON(t, h, http.MethodGet, "/api/v1/plan?api_key="+testKey, nil)
+	if rec.Code != http.StatusOK {
+		t.Fatalf("plan %d", rec.Code)
+	}
+	var plan map[string]any
+	if err := json.Unmarshal(rec.Body.Bytes(), &plan); err != nil {
+		t.Fatal(err)
+	}
+	if plan["plan"] != "pro" {
+		t.Fatalf("plan %+v", plan)
+	}
+	features, _ := plan["features"].(map[string]any)
+	if features["write_api"] != true || features["data_window"] != nil {
+		t.Fatalf("features %+v", features)
+	}
+
+	_ = doJSON(t, h, http.MethodPost, "/api/v1/points?api_key="+testKey, map[string]any{
+		"locations": []any{
+			feature(139.0, 35.0, "2025-01-01T00:00:00Z"),
+			feature(139.01, 35.01, "2025-01-01T00:10:00Z"),
+			feature(139.02, 35.02, "2025-02-01T00:00:00Z"),
+		},
+	})
+
+	rec = doJSON(t, h, http.MethodGet, "/api/v1/points/tracked_months?api_key="+testKey, nil)
+	if rec.Code != http.StatusOK {
+		t.Fatalf("months %d %s", rec.Code, rec.Body.String())
+	}
+	var months []map[string]any
+	if err := json.Unmarshal(rec.Body.Bytes(), &months); err != nil {
+		t.Fatal(err)
+	}
+	if len(months) != 1 || months[0]["year"] != float64(2025) {
+		t.Fatalf("months %+v", months)
+	}
+
+	rec = doJSON(t, h, http.MethodGet, "/api/v1/insights?api_key="+testKey+"&year=2025", nil)
+	if rec.Code != http.StatusOK {
+		t.Fatalf("insights %d %s", rec.Code, rec.Body.String())
+	}
+	var overview map[string]any
+	if err := json.Unmarshal(rec.Body.Bytes(), &overview); err != nil {
+		t.Fatal(err)
+	}
+	if overview["year"] != float64(2025) {
+		t.Fatalf("overview %+v", overview)
+	}
+	totals, _ := overview["totals"].(map[string]any)
+	if totals["countriesCount"] != float64(0) {
+		t.Fatal("geocoding fields must stay honest zeros")
+	}
+
+	rec = doJSON(t, h, http.MethodGet, "/api/v1/insights/details?api_key="+testKey+"&year=2025", nil)
+	if rec.Code != http.StatusOK {
+		t.Fatalf("details %d %s", rec.Code, rec.Body.String())
+	}
+
+	rec = doJSON(t, h, http.MethodGet, "/api/v1/stats?api_key="+testKey, nil)
+	if rec.Code != http.StatusOK {
+		t.Fatalf("stats %d %s", rec.Code, rec.Body.String())
+	}
+	var stats map[string]any
+	if err := json.Unmarshal(rec.Body.Bytes(), &stats); err != nil {
+		t.Fatal(err)
+	}
+	if stats["totalPointsTracked"] != float64(3) {
+		t.Fatalf("stats %+v", stats)
+	}
+}
+
+func TestRequestLogOmitsAPIKey(t *testing.T) {
+	var buf bytes.Buffer
+	prev := slog.Default()
+	slog.SetDefault(slog.New(slog.NewTextHandler(&buf, nil)))
+	t.Cleanup(func() { slog.SetDefault(prev) })
+
+	h := newTestHandler(t)
+	_ = doJSON(t, h, http.MethodGet, "/api/v1/health?api_key="+testKey, nil)
+	logged := buf.String()
+	if strings.Contains(logged, testKey) {
+		t.Fatalf("log leaked api key: %s", logged)
+	}
+	if !strings.Contains(logged, "/api/v1/health") {
+		t.Fatalf("log missing path: %s", logged)
 	}
 }
 
@@ -277,5 +504,8 @@ func newTestHandler(t *testing.T) http.Handler {
 		TimeZone:     "Asia/Tokyo",
 		Location:     loc,
 		DatabasePath: "unused",
+		UserEmail:    "itayo@example.com",
+		UserTheme:    "light",
+		LogFormat:    "text",
 	}, st)
 }

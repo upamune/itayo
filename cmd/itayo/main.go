@@ -12,6 +12,7 @@ import (
 
 	"github.com/upamune/itayo/internal/config"
 	"github.com/upamune/itayo/internal/httpapi"
+	"github.com/upamune/itayo/internal/logx"
 	"github.com/upamune/itayo/internal/store"
 	"github.com/upamune/itayo/internal/version"
 )
@@ -28,6 +29,8 @@ func run() error {
 	if err != nil {
 		return err
 	}
+	initLogger(cfg.LogFormat)
+
 	st, err := store.Open(cfg.DatabasePath)
 	if err != nil {
 		return err
@@ -38,6 +41,10 @@ func run() error {
 		Addr:              cfg.ListenAddr,
 		Handler:           httpapi.New(cfg, st),
 		ReadHeaderTimeout: 10 * time.Second,
+		ReadTimeout:       30 * time.Second,
+		WriteTimeout:      60 * time.Second,
+		IdleTimeout:       120 * time.Second,
+		MaxHeaderBytes:    1 << 20,
 	}
 
 	errCh := make(chan error, 1)
@@ -61,8 +68,13 @@ func run() error {
 		}
 		return err
 	case <-ctx.Done():
+		slog.Info("shutting down")
 		shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 		return srv.Shutdown(shutdownCtx)
 	}
+}
+
+func initLogger(format string) {
+	slog.SetDefault(slog.New(logx.NewHandler(format)))
 }

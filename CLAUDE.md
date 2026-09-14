@@ -13,7 +13,7 @@ mise run build
 mise run ci
 ```
 
-起動は `mise run build` のあと `API_KEY=your-secret ./dist/itayo`。`API_KEY` が空だと起動しない。既定は `LISTEN_ADDR=:8790`、`TIME_ZONE=Asia/Tokyo`。認証は `?api_key=` と `Authorization: Bearer` の両方を受け付ける（Dawarich 互換）。手で叩くときは Bearer を使う。クエリキーはアクセスログとプロキシに残る。
+起動は `mise run build` のあと `API_KEY=your-secret ./dist/itayo`。`API_KEY` が空だと起動しない。既定は `LISTEN_ADDR=:8790`、`TIME_ZONE=Asia/Tokyo`。認証は `?api_key=` と `Authorization: Bearer` の両方を受け付ける（Dawarich 互換）。手で叩くときは Bearer を使う。クエリキーはアクセスログとプロキシに残る。SIGTERM で graceful shutdown。
 
 ## 規約
 
@@ -27,9 +27,15 @@ mise run ci
 
 ```
 cmd/itayo/           # エントリポイント
+internal/auth/       # api_key / Bearer、constant-time 比較
 internal/config/     # 環境変数
-internal/store/      # SQLite
+internal/store/      # SQLite（migrations, WAL, indexes）
+internal/settings/   # permit list と mobile sync
 internal/ingest/     # 公式 iOS GeoJSON
+internal/insights/   # 点からの距離・ヒートマップ・stats
 internal/httpapi/    # Dawarich 互換 HTTP
+internal/logx/       # 秘密を出さない slog
+internal/geo/        # haversine
 internal/version/    # X-Dawarich-Version
+contrib/systemd/     # プレースホルダ付きユニット
 ```

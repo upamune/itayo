@@ -9,6 +9,9 @@ func TestLoadDefaults(t *testing.T) {
 	t.Setenv("LISTEN_ADDR", "")
 	t.Setenv("TIME_ZONE", "")
 	t.Setenv("DATABASE_PATH", "")
+	t.Setenv("USER_EMAIL", "")
+	t.Setenv("USER_THEME", "")
+	t.Setenv("LOG_FORMAT", "")
 
 	cfg, err := Load()
 	if err != nil {
@@ -29,6 +32,15 @@ func TestLoadDefaults(t *testing.T) {
 	if cfg.APIKey != "your-secret" {
 		t.Fatalf("APIKey = %q", cfg.APIKey)
 	}
+	if cfg.UserEmail != DefaultUserEmail {
+		t.Fatalf("UserEmail = %q", cfg.UserEmail)
+	}
+	if cfg.UserTheme != DefaultUserTheme {
+		t.Fatalf("UserTheme = %q", cfg.UserTheme)
+	}
+	if cfg.LogFormat != DefaultLogFormat {
+		t.Fatalf("LogFormat = %q", cfg.LogFormat)
+	}
 }
 
 func TestLoadInvalidTimeZone(t *testing.T) {
@@ -47,5 +59,13 @@ func TestLoadEmptyAPIKey(t *testing.T) {
 	t.Setenv("API_KEY", "   ")
 	if _, err := Load(); err == nil {
 		t.Fatal("expected error for whitespace API_KEY")
+	}
+}
+
+func TestLoadInvalidLogFormat(t *testing.T) {
+	t.Setenv("API_KEY", "your-secret")
+	t.Setenv("LOG_FORMAT", "xml")
+	if _, err := Load(); err == nil {
+		t.Fatal("expected error")
 	}
 }
