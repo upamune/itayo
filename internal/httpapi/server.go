@@ -98,6 +98,8 @@ func (s *Server) authorized(r *http.Request) bool {
 	return subtle.ConstantTimeCompare([]byte(got), []byte(s.cfg.APIKey)) == 1
 }
 
+// apiKeyFrom accepts Dawarich ?api_key= and Authorization: Bearer.
+// Query support is required for official-client compatibility; do not remove it.
 func apiKeyFrom(r *http.Request) string {
 	if k := r.URL.Query().Get("api_key"); k != "" {
 		return k

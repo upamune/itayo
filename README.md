@@ -47,7 +47,20 @@ curl -sS http://localhost:8790/api/v1/health
 
 公式 iOS アプリのサーバ URL には `http://localhost:8790` か、tailnet 上の `http://YOUR_TAILNET_HOST:8790`（例: `http://itayo.example.ts.net:8790`）を指定する。API キーは `API_KEY` と同じ値。ポートは 80 / 443 / 8788 / 8789 を避け、既定の 8790 を使う。`API_KEY` が空だと起動しない。インターネットへ直接晒さず、プライベートネットワークまたは tailnet 上に置く。
 
-認証は `Authorization: Bearer your-secret` を優先する。`?api_key=` も公式クライアント互換のため受け付けるが、アクセスログやリファラにキーが残るので避ける。
+## 認証
+
+公式 Dawarich 互換のため、次の **両方** を受け付ける。クエリ `?api_key=` は削除しない。
+
+| 方式 | 例 | 推奨 |
+| --- | --- | --- |
+| `Authorization: Bearer` | `Authorization: Bearer your-secret` | **こちらを使う** |
+| クエリ | `?api_key=your-secret` | 公式クライアント互換のため残す。新規の呼び出しでは使わない |
+
+クエリにキーを置くと、リバースプロキシやサーバのアクセスログ、リファラに平文で残る。手で叩くときや自前クライアントでは必ず Bearer にする。
+
+```bash
+curl -sS -H 'Authorization: Bearer your-secret' http://localhost:8790/api/v1/users/me
+```
 
 | メソッド | パス | 備考 |
 | --- | --- | --- |
