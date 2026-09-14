@@ -1,0 +1,37 @@
+[tools]
+go = "1.27"
+gofumpt = "0.12"
+"go:golang.org/x/tools/cmd/goimports" = "0.50.0"
+pinact = "5"
+"npm:backlog" = { version = "1.4", allow_low_downloads = true }
+
+[tasks.format]
+description = "goimports + gofumpt + go fix"
+run = [
+  "goimports -local github.com/upamune/itayo -w .",
+  "gofumpt -l -w .",
+  "go fix ./...",
+]
+
+[tasks."format:check"]
+description = "Format check (diff があれば失敗)"
+run = [
+  "test -z \"$(goimports -local github.com/upamune/itayo -l .)\" || { goimports -local github.com/upamune/itayo -l .; exit 1; }",
+  "test -z \"$(gofumpt -l .)\" || { gofumpt -l .; exit 1; }",
+  "go fix -diff ./...",
+]
+
+[tasks.lint]
+description = "go vet"
+run = "go vet ./..."
+
+[tasks.test]
+description = "Test"
+run = "go test -race ./..."
+
+[tasks.build]
+description = "CGO-free single binary"
+run = "CGO_ENABLED=0 go build -trimpath -o dist/itayo ./cmd/itayo"
+
+[tasks.ci]
+depends = ["format:check", "lint", "test", "build"]

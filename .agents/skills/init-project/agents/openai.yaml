@@ -1,0 +1,5 @@
+interface:
+  display_name: "Init Project"
+  short_description: "Go / TypeScript(Bun + TanStack Start + shadcn/ui + Effect + Ultracite) の初期セットアップ"
+policy:
+  allow_implicit_invocation: false

@@ -1,0 +1,269 @@
+{
+  "version": 1,
+  "skills": {
+    "animate": {
+      "source": "upamune/skills",
+      "sourceType": "github",
+      "skillPath": "skills/external/animate/SKILL.md",
+      "computedHash": "609e30351bf518b21a8cfe87cd1111554855527075d6563605bafe61963252f7"
+    },
+    "animation-vocabulary": {
+      "source": "upamune/skills",
+      "sourceType": "github",
+      "skillPath": "skills/external/animation-vocabulary/SKILL.md",
+      "computedHash": "39319fc9a33c15be08666b3685f58666f042ff36bb902b7814c0834a5ba99df4"
+    },
+    "apple-design": {
+      "source": "upamune/skills",
+      "sourceType": "github",
+      "skillPath": "skills/external/apple-design/SKILL.md",
+      "computedHash": "8b94db67cb9edaad5f1501010804caa610131f1d2dfda0a27664b2e858deade3"
+    },
+    "claude-handoff": {
+      "source": "upamune/skills",
+      "sourceType": "github",
+      "skillPath": "skills/external/claude-handoff/SKILL.md",
+      "computedHash": "f8c4754a25aa4e12601ce69db4388bb0d30ca526b225351180c5b0d2a4649a95"
+    },
+    "code-review": {
+      "source": "upamune/skills",
+      "sourceType": "github",
+      "skillPath": "skills/external/code-review/SKILL.md",
+      "computedHash": "caa9a086baaf9e0f7cd71f64edfa83da6821c05e826b083221f3d02e3d6a1905"
+    },
+    "codebase-design": {
+      "source": "upamune/skills",
+      "sourceType": "github",
+      "skillPath": "skills/external/codebase-design/SKILL.md",
+      "computedHash": "5a17552cc1482f1a40124bf4e6c9dbd90ac0dbb47e71c07d47369f9e5f2ae3b5"
+    },
+    "cognitive-rhythm-writing": {
+      "source": "upamune/skills",
+      "sourceType": "github",
+      "skillPath": "skills/external/cognitive-rhythm-writing/SKILL.md",
+      "computedHash": "c9bc3d89d327689176561ef4d73135685c73d90eca03f70403e4e21af3c68a3b"
+    },
+    "deslop": {
+      "source": "upamune/skills",
+      "sourceType": "github",
+      "skillPath": "skills/external/deslop/SKILL.md",
+      "computedHash": "8883a7d459c07a0b2ee06972e79baa634009aa3bab969a6650acbefac394ad41"
+    },
+    "diagnosing-bugs": {
+      "source": "upamune/skills",
+      "sourceType": "github",
+      "skillPath": "skills/external/diagnosing-bugs/SKILL.md",
+      "computedHash": "37b5e9c624513551da790b52864dc8c84bff996a6d03a380cc6facdcc0a88354"
+    },
+    "domain-modeling": {
+      "source": "upamune/skills",
+      "sourceType": "github",
+      "skillPath": "skills/external/domain-modeling/SKILL.md",
+      "computedHash": "a11713c0ff7870efa3c331b2e273f09116158485246edc89ae5088eefd1b0b48"
+    },
+    "eli5": {
+      "source": "upamune/skills",
+      "sourceType": "github",
+      "skillPath": "skills/external/eli5/SKILL.md",
+      "computedHash": "6c626392eca359b7408fc25073ccd47ca07c7442ab5548df79e43bafc85a1818"
+    },
+    "emil-design-eng": {
+      "source": "upamune/skills",
+      "sourceType": "github",
+      "skillPath": "skills/external/emil-design-eng/SKILL.md",
+      "computedHash": "41b0a4dc1a27164fe297845a6c6850a39e9242c42c9be999967fcee9df2c5974"
+    },
+    "find-animation-opportunities": {
+      "source": "upamune/skills",
+      "sourceType": "github",
+      "skillPath": "skills/external/find-animation-opportunities/SKILL.md",
+      "computedHash": "8fb8492eb8fbed1313cb430b5831d925d9b8964ca24f3c41a6244cbd1fd98732"
+    },
+    "get-pr-comments": {
+      "source": "upamune/skills",
+      "sourceType": "github",
+      "skillPath": "skills/external/get-pr-comments/SKILL.md",
+      "computedHash": "598f4df0600f25edbafb5a15933869ae967d35c5d2309279f1c3755cbbf78667"
+    },
+    "grill-me": {
+      "source": "upamune/skills",
+      "sourceType": "github",
+      "skillPath": "skills/external/grill-me/SKILL.md",
+      "computedHash": "9cdbb4b8f7a3aeaef82e6230c9e823500d4a8a1214c726cf342cf9829d34fc7d"
+    },
+    "grill-with-docs": {
+      "source": "upamune/skills",
+      "sourceType": "github",
+      "skillPath": "skills/external/grill-with-docs/SKILL.md",
+      "computedHash": "35e62aa423aaeab6a414bcac273f56dfb17802ef2334b41b6a3b00f28196c8cf"
+    },
+    "handoff": {
+      "source": "upamune/skills",
+      "sourceType": "github",
+      "skillPath": "skills/external/handoff/SKILL.md",
+      "computedHash": "20e5f4afdef502637510bc5c64d27645d3c85c88df9cb006824bbb0980166319"
+    },
+    "implement": {
+      "source": "upamune/skills",
+      "sourceType": "github",
+      "skillPath": "skills/external/implement/SKILL.md",
+      "computedHash": "2139cfedf24791adbc839aaab6019cff158af1e28bfead020ec6e0ce01b3e74d"
+    },
+    "improve-animations": {
+      "source": "upamune/skills",
+      "sourceType": "github",
+      "skillPath": "skills/external/improve-animations/SKILL.md",
+      "computedHash": "eeb219a407e325b687af88db25771cc3018e3148245604112f5ac6990b6fd79c"
+    },
+    "improve-codebase-architecture": {
+      "source": "upamune/skills",
+      "sourceType": "github",
+      "skillPath": "skills/external/improve-codebase-architecture/SKILL.md",
+      "computedHash": "2449db6ab1ded9581f69fcc56c1f64818112d05e271fd4c5da23c6523f9d3d9d"
+    },
+    "init-project": {
+      "source": "upamune/skills",
+      "sourceType": "github",
+      "skillPath": "skills/engineering/init-project/SKILL.md",
+      "computedHash": "495c8ffaba2be2f057bb9fe1fb524a4fc9911379ab96a567fef12cc335785c84"
+    },
+    "japanese-tech-writing": {
+      "source": "upamune/skills",
+      "sourceType": "github",
+      "skillPath": "skills/external/japanese-tech-writing/SKILL.md",
+      "computedHash": "dd4b5495821a9ff455c6d9a3c021d87ebebbc1fbe4ada96cbce45170aa0dbab3"
+    },
+    "loop-me": {
+      "source": "upamune/skills",
+      "sourceType": "github",
+      "skillPath": "skills/external/loop-me/SKILL.md",
+      "computedHash": "72e01a16929dbf6583afc469a49d64b28b1be4a6034c900decd94cd5a69ba6e6"
+    },
+    "loop-on-ci": {
+      "source": "upamune/skills",
+      "sourceType": "github",
+      "skillPath": "skills/external/loop-on-ci/SKILL.md",
+      "computedHash": "2d6eaadbe66bf8c3fc872c74f08e867e3a1f51c2f5948f71a77a90b2cc12d4cd"
+    },
+    "make-pr-easy-to-review": {
+      "source": "upamune/skills",
+      "sourceType": "github",
+      "skillPath": "skills/external/make-pr-easy-to-review/SKILL.md",
+      "computedHash": "8b3e62ce5609388731966d66725a0962e6d6c249bf384b84e131eb24de3c2b27"
+    },
+    "new-branch-and-pr": {
+      "source": "upamune/skills",
+      "sourceType": "github",
+      "skillPath": "skills/external/new-branch-and-pr/SKILL.md",
+      "computedHash": "fee5edaa9344c396b11f3899f04a962784987b9940635c287ac51c96c5d2f403"
+    },
+    "pick-ui-library": {
+      "source": "upamune/skills",
+      "sourceType": "github",
+      "skillPath": "skills/external/pick-ui-library/SKILL.md",
+      "computedHash": "f8d4d2cf4677bf54b14f35f62a741add93541bfcb67863315a40164365161b49"
+    },
+    "pr-review-canvas": {
+      "source": "upamune/skills",
+      "sourceType": "github",
+      "skillPath": "skills/external/pr-review-canvas/SKILL.md",
+      "computedHash": "b9ad154880ed8e865185f28fa646384475ae324af0baffc7f5787904f4b30bda"
+    },
+    "prototype": {
+      "source": "upamune/skills",
+      "sourceType": "github",
+      "skillPath": "skills/external/prototype/SKILL.md",
+      "computedHash": "d3fc74689bd993e39c44bfae510d014eecffbeec2922764b065377fd1327c0f6"
+    },
+    "research": {
+      "source": "upamune/skills",
+      "sourceType": "github",
+      "skillPath": "skills/external/research/SKILL.md",
+      "computedHash": "c8c1cba327a6f824b554cd978079a3dadd7406d73174f8fb9bfef58824691970"
+    },
+    "resolving-merge-conflicts": {
+      "source": "upamune/skills",
+      "sourceType": "github",
+      "skillPath": "skills/external/resolving-merge-conflicts/SKILL.md",
+      "computedHash": "63b2dcadbe9124caeb3448f1378286fe18dcefb2494f60e136831b8b4986ca27"
+    },
+    "review-and-ship": {
+      "source": "upamune/skills",
+      "sourceType": "github",
+      "skillPath": "skills/external/review-and-ship/SKILL.md",
+      "computedHash": "8d6a4b696b9c89ee19a8aebdcc3a624d092911a7233273039b00ededd14de187"
+    },
+    "review-animations": {
+      "source": "upamune/skills",
+      "sourceType": "github",
+      "skillPath": "skills/external/review-animations/SKILL.md",
+      "computedHash": "b9f669af5ae280c19a592a94611520335a81de25c88f225bf60ae4b2d66c8c7c"
+    },
+    "show-me": {
+      "source": "upamune/skills",
+      "sourceType": "github",
+      "skillPath": "skills/external/show-me/SKILL.md",
+      "computedHash": "de32a72f802801f08a84641b467f2c6306d35a58ce5e59ea607ac3a993a18c91"
+    },
+    "simplify": {
+      "source": "upamune/skills",
+      "sourceType": "github",
+      "skillPath": "skills/external/simplify/SKILL.md",
+      "computedHash": "322a20071306ede626dc73ac05182b08c97b60781e23ec3fbf23f85a4d27d111"
+    },
+    "tagpr": {
+      "source": "upamune/skills",
+      "sourceType": "github",
+      "skillPath": "skills/engineering/tagpr/SKILL.md",
+      "computedHash": "db3ad36261fe1ef1a7c633cc16e13c13623936903c9645a3eef1c91135eda31a"
+    },
+    "teach": {
+      "source": "upamune/skills",
+      "sourceType": "github",
+      "skillPath": "skills/external/teach/SKILL.md",
+      "computedHash": "b8a69574c7a019bed84e84313dc8bf02e1d1bf925ba43057d433217c63863206"
+    },
+    "thermo-nuclear-code-quality-review": {
+      "source": "upamune/skills",
+      "sourceType": "github",
+      "skillPath": "skills/external/thermo-nuclear-code-quality-review/SKILL.md",
+      "computedHash": "9052b01b46b1d8dbf94c45f9313ec1983443f9a460e83d49cdc7fe0f640ca476"
+    },
+    "ultra-ship": {
+      "source": "upamune/skills",
+      "sourceType": "github",
+      "skillPath": "skills/engineering/ultra-ship/SKILL.md",
+      "computedHash": "04da1358152622c2f8b44ca7ca44dc1490793f8a691f8b55175fae0bff8b2763"
+    },
+    "uv-script": {
+      "source": "upamune/skills",
+      "sourceType": "github",
+      "skillPath": "skills/engineering/uv-script/SKILL.md",
+      "computedHash": "5545e330c03e8d592b128b0aafca1239aeb5521c19dc5faa6145659e45964526"
+    },
+    "weekly-review": {
+      "source": "upamune/skills",
+      "sourceType": "github",
+      "skillPath": "skills/external/weekly-review/SKILL.md",
+      "computedHash": "44758e8294c79fc6906253b319a18fb76e318fd2c99d697b39b94848cc8494da"
+    },
+    "what-did-i-get-done": {
+      "source": "upamune/skills",
+      "sourceType": "github",
+      "skillPath": "skills/external/what-did-i-get-done/SKILL.md",
+      "computedHash": "c2b206c90991d42a771bb5250fabe2a0b4e9a5ffb5b59856512ebbcdb4e43be9"
+    },
+    "workflow-from-chats": {
+      "source": "upamune/skills",
+      "sourceType": "github",
+      "skillPath": "skills/external/workflow-from-chats/SKILL.md",
+      "computedHash": "421f2e4ace6d101b4234e5ad9141adce0a13bf4c3aadd41fc63ea051a73ba2a0"
+    },
+    "writing-for-agents": {
+      "source": "upamune/skills",
+      "sourceType": "github",
+      "skillPath": "skills/external/writing-for-agents/SKILL.md",
+      "computedHash": "95da47fc97af998e85b7d7e6d57b3ac76727c1e290cfe9ea09005aacb826959f"
+    }
+  }
+}

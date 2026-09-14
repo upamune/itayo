@@ -1,0 +1,3 @@
+interface:
+  display_name: "tagpr"
+  short_description: "tagpr によるリリース PR・タグ・GitHub Release の自動化を GitHub App トークンで導入する"
