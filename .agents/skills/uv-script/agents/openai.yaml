@@ -1,0 +1,3 @@
+interface:
+  display_name: "uv-script"
+  short_description: "uv の PEP 723 インラインメタデータ（exclude-newer 必須）で単一ファイルの Python スクリプトを書く"

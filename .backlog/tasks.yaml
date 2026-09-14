@@ -1,0 +1,29 @@
+version: 1
+tasks:
+  - id: task_001
+    title: 初期セットアップの確認
+    source_links: []
+    status: ready
+    priority: P2
+    labels: []
+    repo_targets: []
+    acceptance_criteria: []
+    dependencies: []
+    planning:
+      split_status: pending
+      risk: medium
+    execution_defaults:
+      manual_approval_required: false
+      auto_commit: true
+      push_when_done: true
+      create_pr: false
+      merge_pr: false
+      worktree_mode: direct
+      preferred_agents: []
+      max_subagents: 5
+    sync:
+      source_of_truth: backlog
+      push_status: false
+      push_comments: false
+    created_at: 2026-09-14T22:05:44.891Z
+    updated_at: 2026-09-14T22:05:44.891Z

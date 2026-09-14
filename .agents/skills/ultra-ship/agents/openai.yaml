@@ -1,0 +1,5 @@
+interface:
+  display_name: "Ultra Ship"
+  short_description: "実装済みブランチをコミット・merge・レビュー反復・PR・CI green まで一気に仕上げる"
+policy:
+  allow_implicit_invocation: false
